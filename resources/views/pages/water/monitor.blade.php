@@ -21,16 +21,16 @@
             <div class="card-body pt-0">
                 <div class="d-flex justify-content-between">
                     @foreach ($keys as $i => $key)
-                    <div class="col-auto p-2 border border-shadow" style="border-radius: 1rem; background-color:white">
+                    <div class="col-auto p-2 border border-shadow dark:bg-dark text-dark dark:text-white" style="border-radius: 1rem;">
                         <div class="numbers mx-2 px-2">
                             <p class="text-sm mb-2 text-uppercase">
                                 @php echo $names[$i]; @endphp
                             </p>
-                            <p class="text-lg font-weight-bolder text-dark m-0 p-0">
+                            <h6 class="text-lg font-weight-bolder text-dark m-0 p-0">
                                 {{ $data[$key] }}
                                 <span><small class="text-warning" id="unit1"">{{ $units1[$i]}}</small></span>
                                 <!-- <span><small class=" text-warning" id="unit2">{{ $units2[$i] }}</small></span> -->
-                            </p>
+                            </h6>
                         </div>
                     </div>
                     @endforeach
@@ -138,6 +138,7 @@
                 textStyle: {
                     color: '#333',
                     fontSize: 12,
+                    color: '#888',
                 },
             },
             series: [

@@ -5,7 +5,7 @@
                 ©
                 <script>
                     document.write(new Date().getFullYear())
-                </script>,
+                </script>, Smart Energy Monitoring System developed by IoT Lab FT UNS
                 <!-- made with <i class="fa fa-heart"></i> by
                 <a href="https://iotlab-uns.com" class="font-weight-bold" target="_blank">IoT Lab UNS</a> -->
             </div>

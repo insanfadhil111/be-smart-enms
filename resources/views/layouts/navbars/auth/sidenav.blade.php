@@ -6,13 +6,70 @@
         <a class="navbar-brand m-0" href="{{ route('home') }}">
             <img src="{{ asset('/img/iotlab.jpg') }}" class="navbar-brand-img h-100 ms-1" alt="main_logo">
             <span class="ms-1 font-weight-bold">Smart EnMS</span>
-            <small class="font-weight-light"> FT UNS</small>
+            <small class="font-weight-light"> Gedung 3</small>
             <!-- <small class="font-weight-light">by Trofis.tech</small> -->
         </a>
     </div>
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse  w-auto" id="sidenav-collapse-main">
         <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#gedungCollapse" role="button" aria-expanded="false" aria-controls="gedungCollapse">
+                    <div class="d-flex align-items-center">
+                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="fa-solid fa-building text-primary text-sm"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">Pilih Gedung</span>
+                    </div>
+                </a>
+                <div class="collapse ps-2" id="gedungCollapse">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-ged1">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 1
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-ged2">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 2
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center {{ str_contains(request()->url(), 'smart-enms') ? 'active' : '' }}" 
+                               href="{{ route('home') }}">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 3
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-ged4">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 4
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-ged5">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 5
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-ged6">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung 6
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-sm d-flex align-items-center" href="https://iotlab.ft.uns.ac.id/smart-enms-rektorat">
+                                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                                Gedung Rektorat
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
             <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteName() == 'home' ? 'active' : '' }}"
                     href="{{ route('home') }}">
@@ -130,39 +187,39 @@
                     <span class="nav-link-text ms-1">Profile</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link {{ str_contains(request()->url(), 'user-management') == true ? 'active' : '' }}"
-                    href="{{ route('page', ['page' => 'user-management']) }}">
-                    <div
-                        class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-bullet-list-67 text-dark text-sm opacity-10"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">List of Access</span>
-                </a>
-            </li>
-            <li class="nav-item mt-3">
-                <h6 class="ps-2 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Config Pages</h6>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteName() == 'profile-static' ? 'active' : '' }}"
-                    href="{{ route('profile-static') }}">
-                    <div
-                        class="icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-list-check text-danger"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">List of Devices</span>
-                </a>
-            </li>
+            <!--<li class="nav-item">-->
+            <!--    <a class="nav-link {{ str_contains(request()->url(), 'user-management') == true ? 'active' : '' }}"-->
+            <!--        href="{{ route('page', ['page' => 'user-management']) }}">-->
+            <!--        <div-->
+            <!--            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">-->
+            <!--            <i class="ni ni-bullet-list-67 text-dark text-sm opacity-10"></i>-->
+            <!--        </div>-->
+            <!--        <span class="nav-link-text ms-1">List of Access</span>-->
+            <!--    </a>-->
+            <!--</li>-->
+            <!--<li class="nav-item mt-3">-->
+            <!--    <h6 class="ps-2 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Config Pages</h6>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+            <!--    <a class="nav-link {{ Route::currentRouteName() == 'profile-static' ? 'active' : '' }}"-->
+            <!--        href="{{ route('profile-static') }}">-->
+            <!--        <div-->
+            <!--            class="icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">-->
+            <!--            <i class="fa-solid fa-list-check text-danger"></i>-->
+            <!--        </div>-->
+            <!--        <span class="nav-link-text ms-1">List of Devices</span>-->
+            <!--    </a>-->
+            <!--</li>-->
 
-            <li class="nav-item">
-                <a class="nav-link " href="{{ route('sign-up-static') }}">
-                    <div
-                        class="icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-microchip" style="color: #596CFF"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Integrated System</span>
-                </a>
-            </li>
+            <!--<li class="nav-item">-->
+            <!--    <a class="nav-link " href="{{ route('sign-up-static') }}">-->
+            <!--        <div-->
+            <!--            class="icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">-->
+            <!--            <i class="fa-solid fa-microchip" style="color: #596CFF"></i>-->
+            <!--        </div>-->
+            <!--        <span class="nav-link-text ms-1">Integrated System</span>-->
+            <!--    </a>-->
+            <!--</li>-->
             <!-- <li class="nav-item text-center">
                 <a href="/docs/bootstrap/overview/argon-dashboard/index.html" target="_blank"
                     class="btn btn-dark btn-sm w-75 mb-3">Documentation</a>

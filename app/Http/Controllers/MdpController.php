@@ -223,47 +223,209 @@ class MdpController extends Controller
         return $mdp->toArray();
     }
 
+    // UNTUK PERHITUNGAN todayKwh di kwh_1 saja. Untuk yang total kwh_1 sampai kwh_5 pakai yang dibawah fungsi ini
     public function totalMdpKwhToday()
     {
-        /**
-         * Retrieve the total energy consumption for today.
-         *
-         * @return \Illuminate\Http\JsonResponse|array The total energy consumption for today.
-         */
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
 
         $energyToday = DB::transaction(function () use ($today, $yesterday) {
-            // Subquery for today's latest record
             $todayData = MdpKwh::whereDate('created_at', $today)
                 ->latest()
                 ->first();
 
-            // Subquery for yesterday's latest record
             $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
                 ->latest()
                 ->first();
 
             if ($todayData && $yesterdayData) {
-                // Calculate the difference
-                return [
-                    'kwh_1' => $todayData->kwh_1 - $yesterdayData->kwh_1,
-                    'kwh_2' => $todayData->kwh_2 - $yesterdayData->kwh_2,
-                    'kwh_3' => $todayData->kwh_3 - $yesterdayData->kwh_3,
-                    'kwh_4' => $todayData->kwh_4 - $yesterdayData->kwh_4,
-                    'kwh_5' => $todayData->kwh_5 - $yesterdayData->kwh_5,
-                ];
+                // Hanya ambil kwh_1 saja
+                return $todayData->kwh_1 - $yesterdayData->kwh_1;
             }
 
             return null;
         });
-        if ($energyToday == null) {
-            $energyToday = 0;
-            return $energyToday;
+
+        if ($energyToday === null) {
+            return 0;
         }
-        $todayKwh = number_format(array_sum($energyToday), 2, ',', '.');
+
+        // Format angka: 2 desimal, koma sebagai pemisah desimal, titik sebagai ribuan
+        $todayKwh = number_format($energyToday, 2, ',', '.');
 
         return $todayKwh;
+    }
+
+    // INI UNTUK TOTAL kwh_1 sampai kwh_5
+    // public function totalMdpKwhToday()
+    // {
+    //     /**
+    //      * Retrieve the total energy consumption for today.
+    //      *
+    //      * @return \Illuminate\Http\JsonResponse|array The total energy consumption for today.
+    //      */
+    //     $today = Carbon::today();
+    //     $yesterday = Carbon::yesterday();
+
+    //     $energyToday = DB::transaction(function () use ($today, $yesterday) {
+    //         // Subquery for today's latest record
+    //         $todayData = MdpKwh::whereDate('created_at', $today)
+    //             ->latest()
+    //             ->first();
+
+    //         // Subquery for yesterday's latest record
+    //         $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
+    //             ->latest()
+    //             ->first();
+
+    //         if ($todayData && $yesterdayData) {
+    //             // Calculate the difference
+    //             return [
+    //                 'kwh_1' => $todayData->kwh_1 - $yesterdayData->kwh_1,
+    //                 'kwh_2' => $todayData->kwh_2 - $yesterdayData->kwh_2,
+    //                 'kwh_3' => $todayData->kwh_3 - $yesterdayData->kwh_3,
+    //                 'kwh_4' => $todayData->kwh_4 - $yesterdayData->kwh_4,
+    //                 'kwh_5' => $todayData->kwh_5 - $yesterdayData->kwh_5,
+    //             ];
+    //         }
+
+    //         return null;
+    //     });
+    //     if ($energyToday == null) {
+    //         $energyToday = 0;
+    //         return $energyToday;
+    //     }
+    //     $todayKwh = number_format(array_sum($energyToday), 2, ',', '.');
+
+    //     return $todayKwh;
+    // }
+    
+    public function totalMdpKwhToday2()
+    {
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        $energyToday = DB::transaction(function () use ($today, $yesterday) {
+            $todayData = MdpKwh::whereDate('created_at', $today)
+                ->latest()
+                ->first();
+
+            $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
+                ->latest()
+                ->first();
+
+            if ($todayData && $yesterdayData) {
+                // Hanya ambil kwh_1 saja
+                return $todayData->kwh_2 - $yesterdayData->kwh_2;
+            }
+
+            return null;
+        });
+
+        if ($energyToday === null) {
+            return 0;
+        }
+
+        // Format angka: 2 desimal, koma sebagai pemisah desimal, titik sebagai ribuan
+        $todayKwh2 = number_format($energyToday, 2, ',', '.');
+
+        return $todayKwh2;
+    }
+
+    public function totalMdpKwhToday3()
+    {
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        $energyToday = DB::transaction(function () use ($today, $yesterday) {
+            $todayData = MdpKwh::whereDate('created_at', $today)
+                ->latest()
+                ->first();
+
+            $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
+                ->latest()
+                ->first();
+
+            if ($todayData && $yesterdayData) {
+                // Hanya ambil kwh_1 saja
+                return $todayData->kwh_3 - $yesterdayData->kwh_3;
+            }
+
+            return null;
+        });
+
+        if ($energyToday === null) {
+            return 0;
+        }
+
+        // Format angka: 2 desimal, koma sebagai pemisah desimal, titik sebagai ribuan
+        $todayKwh3 = number_format($energyToday, 2, ',', '.');
+
+        return $todayKwh3;
+    }
+
+    public function totalMdpKwhToday4()
+    {
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        $energyToday = DB::transaction(function () use ($today, $yesterday) {
+            $todayData = MdpKwh::whereDate('created_at', $today)
+                ->latest()
+                ->first();
+
+            $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
+                ->latest()
+                ->first();
+
+            if ($todayData && $yesterdayData) {
+                // Hanya ambil kwh_1 saja
+                return $todayData->kwh_4 - $yesterdayData->kwh_4;
+            }
+
+            return null;
+        });
+
+        if ($energyToday === null) {
+            return 0;
+        }
+
+        // Format angka: 2 desimal, koma sebagai pemisah desimal, titik sebagai ribuan
+        $todayKwh4 = number_format($energyToday, 2, ',', '.');
+
+        return $todayKwh4;
+    }
+
+    public function totalMdpKwhToday5()
+    {
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        $energyToday = DB::transaction(function () use ($today, $yesterday) {
+            $todayData = MdpKwh::whereDate('created_at', $today)
+                ->latest()
+                ->first();
+
+            $yesterdayData = MdpKwh::whereDate('created_at', $yesterday)
+                ->latest()
+                ->first();
+
+            if ($todayData && $yesterdayData) {
+                // Hanya ambil kwh_1 saja
+                return $todayData->kwh_5 - $yesterdayData->kwh_5;
+            }
+
+            return null;
+        });
+
+        if ($energyToday === null) {
+            return 0;
+        }
+
+        // Format angka: 2 desimal, koma sebagai pemisah desimal, titik sebagai ribuan
+        $todayKwh5 = number_format($energyToday, 2, ',', '.');
+
+        return $todayKwh5;
     }
 
     public function getControlState()

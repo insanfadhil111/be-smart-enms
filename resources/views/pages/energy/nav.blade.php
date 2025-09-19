@@ -15,7 +15,7 @@
           <li class="nav-item">
                <a class="nav-link mb-0 px-0 py-1 {{str_contains(request()->url(), 'stats') == true ? 'bg-gray-300' : '' }}"
                     href="{{ route('energy-stats') }}" role="tab" aria-controls="code" aria-selected="false">
-                    <i class="ni ni-chart-bar-32 text-sm me-2"></i> Statistics
+                    <i class="ni ni-chart-bar-32 text-sm me-2"></i> AI-Powered Energy Analytics
                </a>
           </li>
      </ul>

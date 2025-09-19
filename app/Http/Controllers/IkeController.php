@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\MdpKwh;
 use App\Models\Subdata;
+use App\Models\IkeConfig;
 use App\Models\EnergyCost;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -103,34 +104,35 @@ class IkeController extends Controller
 
     public function ikeMonthlyClassification($kwh)
     {
-        $luasArea = 2400;
+        $subdata = Subdata::latest()->first();
+        if (!$subdata) {
+            return [
+                'error' => 'Subdata not found. Please ensure default values are set.'
+            ];
+        }
 
+        $luasArea = $subdata->luas_bangunan;
         $angka_ike = round($kwh / $luasArea, 2);
-        switch ($angka_ike) {
-            case $angka_ike <= 7.92:
-                $ike = 'Sangat Efisien';
-                $color = '#00ff00';
+
+        $ikeConfigs = IkeConfig::orderBy('batas_bawah')->get();
+
+        $ike = 'Unknown';
+        $color = '#000000';
+
+        foreach ($ikeConfigs as $index => $config) {
+            if ($index === $ikeConfigs->count() - 1 && $config->kategori === 'Sangat Boros') {
+                if ($angka_ike > $config->batas_atas) {
+                    $ike = $config->kategori;
+                    $color = $config->warna;
+                    break;
+                }
+            }
+
+            if ($angka_ike >= $config->batas_bawah && $angka_ike <= $config->batas_atas) {
+                $ike = $config->kategori;
+                $color = $config->warna;
                 break;
-            case $angka_ike > 7.92 && $angka_ike <= 12.08:
-                $ike = 'Efisien';
-                $color = '#009900';
-                break;
-            case $angka_ike > 12.08 && $angka_ike <= 14.58:
-                $ike = 'Cukup Efisien';
-                $color = '#ffff00';
-                break;
-            case $angka_ike > 14.58 && $angka_ike <= 19.17:
-                $ike = 'Agak Boros';
-                $color = '#ff9900';
-                break;
-            case $angka_ike > 19.17 && $angka_ike <= 23.75:
-                $ike = 'Boros';
-                $color = '#ff3300';
-                break;
-            default:
-                $ike = 'Sangat Boros';
-                $color = '#800000';
-                break;
+            }
         }
 
         return [
@@ -142,34 +144,35 @@ class IkeController extends Controller
 
     public function ikeAnnualClassification($kwh)
     {
-        $luasArea = 2400;
+        $subdata = Subdata::latest()->first();
+        if (!$subdata) {
+            return [
+                'error' => 'Subdata not found. Please ensure default values are set.'
+            ];
+        }
 
+        $luasArea = $subdata->luas_bangunan;
         $angka_ike = round($kwh / $luasArea, 2);
-        switch ($angka_ike) {
-            case $angka_ike <= 95:
-                $ike = 'Sangat Efisien';
-                $color = '#00ff00';
+
+        $ikeConfigs = IkeConfig::orderBy('batas_bawah')->get();
+
+        $ike = 'Unknown';
+        $color = '#000000';
+
+        foreach ($ikeConfigs as $index => $config) {
+            if ($index === $ikeConfigs->count() - 1 && $config->kategori === 'Sangat Boros') {
+                if ($angka_ike > $config->batas_atas * 12) {
+                    $ike = $config->kategori;
+                    $color = $config->warna;
+                    break;
+                }
+            }
+
+            if ($angka_ike >= $config->batas_bawah * 12 && $angka_ike <= $config->batas_atas * 12) {
+                $ike = $config->kategori;
+                $color = $config->warna;
                 break;
-            case $angka_ike > 95 && $angka_ike <= 145:
-                $ike = 'Efisien';
-                $color = '#009900';
-                break;
-            case $angka_ike > 145 && $angka_ike <= 175:
-                $ike = 'Cukup Efisien';
-                $color = '#ffff00';
-                break;
-            case $angka_ike > 175 && $angka_ike <= 285:
-                $ike = 'Agak Boros';
-                $color = '#ff9900';
-                break;
-            case $angka_ike > 285 && $angka_ike <= 450:
-                $ike = 'Boros';
-                $color = '#ff3300';
-                break;
-            default:
-                $ike = 'Sangat Boros';
-                $color = '#800000';
-                break;
+            }
         }
 
         return [

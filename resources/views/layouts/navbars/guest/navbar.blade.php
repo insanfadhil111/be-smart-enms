@@ -6,7 +6,7 @@
                 <div class="container-fluid d-flex justify-content-center">
                     <div class="navbar-brand ms-lg-0 ms-3 ">
                         <strong>Smart EnMS</strong>
-                        <small> FT UNS</small>
+                        <small> Gedung 3 FT UNS</small>
                         <!-- <small> by Trofis.id</small> -->
                     </div>
                 </div>

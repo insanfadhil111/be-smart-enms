@@ -6,12 +6,14 @@
     {{-- Section Real Time Info --}}
     <div class="row">
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
+            <div class="card my-2">
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-9">
                             <div class="numbers">
-                                <p class="text-sm mb-2 text-uppercase font-weight-bold">Today Electricity</p>
+                                <p class="text-sm mb-2 text-uppercase font-weight-bold">
+                                Today Energy Usage <span style="color: orange;">(MDP)</span>
+                                </p>
                                 <h5 class="font-weight-bolder">
                                     {{ $todayKwh }} kWh
                                 </h5>
@@ -32,7 +34,119 @@
             </div>
         </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
+            <div class="card my-2">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="numbers">
+                                <p class="text-sm mb-2 text-uppercase font-weight-bold">
+                                Today Energy Usage <span style="color: orange;">1st Floor AC</span>
+                                </p>
+                                <h5 class="font-weight-bolder">
+                                    {{ $todayKwh2 }} kWh
+                                </h5>
+                                <p class="mb-0">
+                                    <span class="text-success text-sm font-weight-bolder">+ 10%</span>
+                                    <small> than average </small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-3 text-end mt-2 p-0">
+                            <div class="icon icon-shape bg-gradient-warning text-center rounded-circle">
+                                <i class="fa-solid fa-plug-circle-bolt text-lg opacity-10" aria-hidden="true"
+                                    style="color: orange"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card my-2">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="numbers">
+                                <p class="text-sm mb-2 text-uppercase font-weight-bold">
+                                Today Energy Usage <span style="color: orange;">2nd Floor AC</span>
+                                </p>
+                                <h5 class="font-weight-bolder">
+                                    {{ $todayKwh3 }} kWh
+                                </h5>
+                                <p class="mb-0">
+                                    <span class="text-success text-sm font-weight-bolder">+ 10%</span>
+                                    <small> than average </small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-3 text-end mt-2 p-0">
+                            <div class="icon icon-shape bg-gradient-warning text-center rounded-circle">
+                                <i class="fa-solid fa-plug-circle-bolt text-lg opacity-10" aria-hidden="true"
+                                    style="color: orange"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--<div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">-->
+        <!--    <div class="card my-2">-->
+        <!--        <div class="card-body p-3">-->
+        <!--            <div class="row">-->
+        <!--                <div class="col-9">-->
+        <!--                    <div class="numbers">-->
+        <!--                        <p class="text-sm mb-2 text-uppercase font-weight-bold">-->
+        <!--                        Today Electricity <span style="color: orange;">kWh 4</span>-->
+        <!--                        </p>-->
+        <!--                        <h5 class="font-weight-bolder">-->
+        <!--                            {{ $todayKwh4 }} kWh-->
+        <!--                        </h5>-->
+        <!--                        <p class="mb-0">-->
+        <!--                            <span class="text-success text-sm font-weight-bolder">+ 10%</span>-->
+        <!--                            <small> than average </small>-->
+        <!--                        </p>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--                <div class="col-3 text-end mt-2 p-0">-->
+        <!--                    <div class="icon icon-shape bg-gradient-warning text-center rounded-circle">-->
+        <!--                        <i class="fa-solid fa-plug-circle-bolt text-lg opacity-10" aria-hidden="true"-->
+        <!--                            style="color: orange"></i>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--        </div>-->
+        <!--    </div>-->
+        <!--</div>-->
+        <!--<div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">-->
+        <!--    <div class="card my-2">-->
+        <!--        <div class="card-body p-3">-->
+        <!--            <div class="row">-->
+        <!--                <div class="col-9">-->
+        <!--                    <div class="numbers">-->
+        <!--                        <p class="text-sm mb-2 text-uppercase font-weight-bold">-->
+        <!--                        Today Electricity <span style="color: orange;">kWh 5</span>-->
+        <!--                        </p>-->
+        <!--                        <h5 class="font-weight-bolder">-->
+        <!--                            {{ $todayKwh5 }} kWh-->
+        <!--                        </h5>-->
+        <!--                        <p class="mb-0">-->
+        <!--                            <span class="text-success text-sm font-weight-bolder">+ 10%</span>-->
+        <!--                            <small> than average </small>-->
+        <!--                        </p>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--                <div class="col-3 text-end mt-2 p-0">-->
+        <!--                    <div class="icon icon-shape bg-gradient-warning text-center rounded-circle">-->
+        <!--                        <i class="fa-solid fa-plug-circle-bolt text-lg opacity-10" aria-hidden="true"-->
+        <!--                            style="color: orange"></i>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--        </div>-->
+        <!--    </div>-->
+        <!--</div>-->
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card my-2">
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-9">
@@ -58,7 +172,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
+            <div class="card my-2">
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-9">
@@ -85,7 +199,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
+            <div class="card my-2">
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-9">
@@ -109,7 +223,6 @@
                 </div>
             </div>
         </div>
-
     </div>
     {{-- Section Graph --}}
     <div class="row mt-4">
@@ -151,6 +264,7 @@
         </div>
     </div>
 </div>
+@include('layouts.footers.auth.footer')
 @endsection
 
 @push('js')

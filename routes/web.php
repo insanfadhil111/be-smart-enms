@@ -18,6 +18,7 @@ use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\IkeController;
 use App\Http\Controllers\SubdataController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\WidgetController;
 
 Route::get('/', function () {
 	return redirect('/dashboard');
@@ -49,6 +50,9 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('subdatas', [SubdataController::class, 'index'])->name('subdatas.index');
 	Route::put('subdatas', [SubdataController::class, 'update'])->name('subdatas.update');
 	Route::get('subdatas/reset', [SubdataController::class, 'reset'])->name('subdatas.reset');
+	// Dashboard Settings
+	Route::get('widget', [WidgetController::class, 'widgetControl'])->name('settings.control');
+	Route::post('widget-update', [WidgetController::class, 'updateWidgetStatus'])->name('settings.control.update');
 
 	Route::get('/security-camera', [SecurityController::class, 'index'])->name('security-camera');
 	Route::get('/security-doorlock', [SecurityController::class, 'doorlock'])->name('security-doorlock');
@@ -59,6 +63,7 @@ Route::group(['middleware' => 'auth'], function () {
 
 	/* Export */
 	Route::get('/export-monthly-kwh', [EnergyController::class, 'exportMonthlyKwh'])->name('export-monthly-kwh');
+	Route::get('/export-daily-kwh', [EnergyController::class, 'exportDailyKwh'])->name('export-daily-kwh');
 
 	Route::get('/envi-sense', [EnvironmentController::class, 'monitor'])->name('envi-sense');
 	Route::get('/envi-lights', [LightsController::class, 'showControl'])->name('envi-lights');

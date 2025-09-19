@@ -33,15 +33,15 @@
                         @php
                         $i=0;
                         foreach ($values as $value) : @endphp <div class="col mx-2 p-2 border border-shadow"
-                            style="border-radius: 1rem; background-color:white">
+                            style="border-radius: 1rem;">
                             <div class="numbers px-2">
                                 <p class="text-sm mb-2 text-uppercase">
                                     @php echo $names[$i]; @endphp
                                 </p>
-                                <p class="text-lg font-weight-bolder text-dark m-0 p-0">
+                                <h6 class="text-lg font-weight-bolder text-dark m-0 p-0">
                                     {{ number_format($value, 2, $decSep, $thSep) }}
                                     <span><small class="text-warning">{{ $satuan[$i] }}</small></span>
-                                </p>
+                                </h6>
                             </div>
                         </div>
                         @php
@@ -137,7 +137,10 @@
                 }
             },
             legend: {
-                data: ['Hallway (W)', 'Rooftop (W)']
+                data: ['Hallway (W)', 'Rooftop (W)'],
+                textStyle: {
+                color: '#888' // warna abu-abu agak terang, bisa diganti sesuka hati
+                }
             },
             xAxis: {
                 type: 'category',

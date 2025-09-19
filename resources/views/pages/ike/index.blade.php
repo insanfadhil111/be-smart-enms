@@ -13,7 +13,7 @@
                     <div class="d-flex justify-content-center">
                         @foreach ($names as $i => $name)
                         <div class="col mx-2 p-2 border border-shadow"
-                            style="border-radius: 1rem; background-color:white">
+                            style="border-radius: 1rem;">
                             <div class="numbers text-center">
                                 <p class="text-sm mb-2 text-uppercase font-weight-bold">
                                     @php echo $name; @endphp

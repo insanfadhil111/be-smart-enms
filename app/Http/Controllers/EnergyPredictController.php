@@ -44,28 +44,45 @@ class EnergyPredictController extends Controller
 
     public function takeMonthlyPredictions(Request $request)
     {
+        // Debugging log untuk melihat data yang diterima
+        \Log::debug('Data yang diterima: ', $request->all());
+
         // Process the received predictions
         $predictions = $request->all();
 
+        // Validasi setiap prediksi dalam array
         foreach ($predictions as $prediction) {
+            $validated = \Validator::make($prediction, [
+                'predicted_month' => 'required|string',  // Pastikan predicted_month adalah string
+                'predicted_kwh' => 'required|numeric',   // Pastikan predicted_kwh adalah angka
+            ]);
+
+            // Jika ada validasi yang gagal, kembalikan error
+            if ($validated->fails()) {
+                return response()->json(['error' => 'Invalid data format'], 400);
+            }
+
+            // Cek apakah sudah ada prediksi untuk bulan yang sama
             $existingPrediction = EnergyPredictMonthly::where('month', $prediction['predicted_month'])->first();
 
             if ($existingPrediction) {
-                // Update the existing prediction
+                // Update prediksi yang ada
                 $existingPrediction->update(['prediction' => $prediction['predicted_kwh']]);
             } else {
-                // Create a new prediction
+                // Buat prediksi baru
                 EnergyPredictMonthly::create([
                     'month' => $prediction['predicted_month'],
                     'prediction' => $prediction['predicted_kwh']
                 ]);
             }
         }
-        // Return a response
+
         return response()->json(['message' => 'Predictions stored or updated successfully'], 200);
     }
 
-    public function getMonthlyPrediction()
+
+
+    public function getMonthlyPredictions()
     {
         $data = EnergyPredictMonthly::orderBy('id', 'asc')->get();
 

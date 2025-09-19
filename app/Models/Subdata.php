@@ -17,6 +17,7 @@ class Subdata extends Model
         'kwhAirPerMeterKubik',
         'trees_eq',
         'coal_eq',
+        'luas_bangunan',
         'decimal_sep',
         'thousand_sep',
     ];

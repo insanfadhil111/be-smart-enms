@@ -23,6 +23,10 @@ class HomeController extends Controller
         /* Real Time Data */
         $MdpCon = new MdpController();
         $todayKwh = $MdpCon->totalMdpKwhToday();
+        $todayKwh2 = $MdpCon->totalMdpKwhToday2();
+        $todayKwh3 = $MdpCon->totalMdpKwhToday3();
+        $todayKwh4 = $MdpCon->totalMdpKwhToday4();
+        $todayKwh5 = $MdpCon->totalMdpKwhToday5();
         $PvCon = new PvController();
         $todayMpp = $PvCon->mppTodayGeneration()['totalEnergy'];
         $todayMppGenerated = $subCon->formatNumber($todayMpp, 2);
@@ -59,7 +63,7 @@ class HomeController extends Controller
         $items = MdpControl::oldest()->get();
 
 
-        return view('pages.dashboard', compact('todayKwh', 'todayPv', 'todayIncome', 'todayWater', 'items', 'monthlyKwh', 'months'));
+        return view('pages.dashboard', compact('todayKwh', 'todayKwh2', 'todayKwh3', 'todayKwh4', 'todayKwh5', 'todayPv', 'todayIncome', 'todayWater', 'items', 'monthlyKwh', 'months'));
     }
 
     public function debugFunc()

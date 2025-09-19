@@ -7,7 +7,7 @@
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('/img/apple-icon.png') }}">
     <link rel="icon" type="image" href="{{ asset('/img/iotlab.jpg') }}">
     <title>
-        Smart EnMS
+        EnMS Gedung 3
     </title>
     @yield('tambahanHead')
     <!--     Fonts and icons     -->
@@ -66,6 +66,85 @@
     <!-- Github buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const darkToggle = document.getElementById('dark-version');
+            const sidenav = document.querySelector('.sidenav');
+            const sidenavButtons = document.querySelectorAll('[onclick="sidebarType(this)"]');
+
+            // === Restore Sidebar Color ===
+            const savedSidebarColor = localStorage.getItem('sidebar-color');
+            if (savedSidebarColor && sidenav) {
+                sidenav.setAttribute('data-color', savedSidebarColor);
+
+                // Update badge color active state
+                document.querySelectorAll('.badge.filter').forEach(badge => {
+                    badge.classList.toggle('active', badge.getAttribute('data-color') === savedSidebarColor);
+                });
+            }
+
+            // === Sidebar Color Change Handler ===
+            window.sidebarColor = function (element) {
+                const newColor = element.getAttribute('data-color');
+                if (!sidenav) return;
+
+                sidenav.setAttribute('data-color', newColor);
+                localStorage.setItem('sidebar-color', newColor);
+
+                // Update badge color active state
+                document.querySelectorAll('.badge.filter').forEach(badge => {
+                    badge.classList.remove('active');
+                });
+                element.classList.add('active');
+            };
+
+            // === Restore Dark Mode ===
+            const isDarkMode = localStorage.getItem('dark-mode') === 'enabled';
+            if (isDarkMode) {
+                document.body.classList.add('dark-version');
+                if (darkToggle) darkToggle.checked = true;
+            }
+
+            // === Restore Sidenav Type ===
+            const savedSidenavClass = localStorage.getItem('sidenav-class');
+            if (savedSidenavClass && sidenav) {
+                sidenav.classList.remove('bg-white', 'bg-default');
+                sidenav.classList.add(savedSidenavClass);
+
+                // Update button state
+                sidenavButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-class') === savedSidenavClass);
+                });
+            }
+
+            // === Dark Mode Toggle Handler ===
+            if (darkToggle) {
+                darkToggle.addEventListener('change', function () {
+                    if (this.checked) {
+                        document.body.classList.add('dark-version');
+                        localStorage.setItem('dark-mode', 'enabled');
+                    } else {
+                        document.body.classList.remove('dark-version');
+                        localStorage.setItem('dark-mode', 'disabled');
+                    }
+                });
+            }
+
+            // === Sidenav Type Change Handler ===
+            window.sidebarType = function (element) {
+                const newClass = element.getAttribute('data-class');
+                if (!sidenav) return;
+
+                sidenav.classList.remove('bg-white', 'bg-default');
+                sidenav.classList.add(newClass);
+                localStorage.setItem('sidenav-class', newClass);
+
+                // Update button active states
+                sidenavButtons.forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+            };
+        });
+    </script>
     <script src="assets/js/argon-dashboard.js"></script>
     @stack('js');
 </body>

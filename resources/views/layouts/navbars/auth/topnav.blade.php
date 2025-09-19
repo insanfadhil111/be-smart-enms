@@ -17,6 +17,9 @@
                     <input type="text" class="form-control" placeholder="Type here...">
                 </div> --}}
             </div>
+            <h4 class="text-white me-4 mb-0 fw-bold text-center text-md-start text-break">
+                EMPOWERING UNS GREEN CAMPUS WITH SMART ENERGY INNOVATION
+            </h4>
             <ul class="navbar-nav  justify-content-end">
                 <li class="nav-item d-flex align-items-center">
                     <form role="form" method="post" action="{{ route('logout') }}" id="logout-form">

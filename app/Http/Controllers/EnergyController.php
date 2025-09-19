@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\EnergyPredict;
 use Illuminate\Support\Carbon;
 use App\Exports\MonthlyBillExport;
+use App\Exports\DailyEnergyExport;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\EnergyPredictMonthly;
@@ -41,6 +42,12 @@ class EnergyController extends Controller
         $latestUpdatedUtil1 = $util1->created_at;
         $latestUpdatedUtil2 = $util2->created_at;
         $latestUpdatedMdp = $mdp->created_at;
+        
+        // Latest Energy Usage Time
+        $lastUpdateTime = MdpKwh::latest('updated_at')->pluck('updated_at')->first();
+        $lastUpdateTime = $lastUpdateTime
+            ? Carbon::parse($lastUpdateTime)->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm')
+            : Carbon::now('Asia/Jakarta')->format('l, d F Y H:i');
 
         /* Data dari MDP Mas Hisbul */
         $mdpEn = $this->getEnergyUsageMonitorById(1);
@@ -57,10 +64,10 @@ class EnergyController extends Controller
 
         $collection = ['Voltage A-N', 'Voltage B-N', 'Voltage C-N', 'Current A', 'Current B', 'Current C', 'Total Current', 'Active Power A', 'Active Power B', 'Active Power C', 'Total Active P', 'Power Factor', 'Frequency', 'Reactive Power A', 'Reactive Power B', 'Reactive Power C', 'Total Reactive P'];
         $keys = ['Van', 'Vbn', 'Vcn', 'Ia', 'Ib', 'Ic', 'It', 'Pa', 'Pb', 'Pc', 'Pt', 'pf', 'f', 'Qa', 'Qb', 'Qc', 'Qt'];
-        $keysEn = ['todayKwh', 'thisMonthKwh', 'thisMonthCost', 'lastMonthKwh', 'lastMonthCost'];
+        $keysEn = ['todayKwh', 'todayCost', 'thisMonthKwh', 'thisMonthCost', 'lastMonthKwh', 'lastMonthCost'];
         $units = ['V', 'V', 'V', 'A', 'A', 'A', 'A', 'kW', 'kW', 'kW', 'kW', '', 'Hz', 'kVAR', 'kVAR', 'kVAR', 'kVAR'];
-        $collection2 = ["Today", "This Month", "This Month Cost", "Last Month", "Last Month Cost"];
-        $units2 = ['kWh', 'kWh', 'IDR', 'kWh', 'IDR'];
+        $collection2 = ["Today", "Today Cost", "This Month", "This Month Cost", "Last Month", "Last Month Cost"];
+        $units2 = ['kWh', 'IDR', 'kWh', 'IDR', 'kWh', 'IDR'];
 
         return view("pages.energy.monitor", [
             'title' => $title,
@@ -77,6 +84,7 @@ class EnergyController extends Controller
             'latestUpdatedUtil1' => $latestUpdatedUtil1,
             'latestUpdatedUtil2' => $latestUpdatedUtil2,
             'latestUpdatedMdp' => $latestUpdatedMdp,
+            'lastUpdateTime' => $lastUpdateTime,
             'mdpEn' => $mdpEn,
             'ac1En' => $ac1En,
             'ac2En' => $ac2En,
@@ -99,138 +107,237 @@ class EnergyController extends Controller
         return view("pages.energy.control", compact('title', 'items'));
     }
 
+    private function calculateMAE(array $actuals, array $predicted): float
+    {
+        $n = count($actuals);
+        if ($n === 0) return 0;
+        $sum = 0;
+        for ($i = 0; $i < $n; $i++) {
+            $sum += abs($actuals[$i] - $predicted[$i]);
+        }
+        return round($sum / $n, 2);
+    }
+    
+    private function calculateRMSE(array $actuals, array $predicted): float
+    {
+        $n = count($actuals);
+        if ($n === 0) return 0;
+        $sum = 0;
+        for ($i = 0; $i < $n; $i++) {
+            $sum += pow($actuals[$i] - $predicted[$i], 2);
+        }
+        return round(sqrt($sum / $n), 2);
+    }
+    
+    private function calculateMAPE(array $actuals, array $predicted): float
+    {
+        $n = count($actuals);
+        if ($n === 0) return 0;
+        $sum = 0;
+        for ($i = 0; $i < $n; $i++) {
+            if ($actuals[$i] == 0) continue;
+            $sum += abs(($actuals[$i] - $predicted[$i]) / $actuals[$i]);
+        }
+        return round(($sum / $n) * 100, 2);
+    }
+
+
     public function stats()
     {
         $title = 'Energy Statistic';
-
         $thisYear = Carbon::now()->year;
+        
         $errors = [];
         $daily = $this->getDailyEnergyAscended($thisYear);
-
+    
         /* Daily Predict */
         $epcon = new EnergyPredictController();
         $predicts = $epcon->getDailyPredictionsByYear($thisYear);
+        $actuals = [];
+        $predicted = [];
+    
         foreach ($predicts as $item) {
-            // calculate difference between actual and prediction and store it in $errors
             $actual = $daily->where('date', $item->date)->first();
             if ($actual) {
-                $error = abs($actual->total - $item->prediction);
-                $percentage = round(($error / $item->prediction) * 100, 0);
+                $actVal = floatval($actual->total);
+                $predVal = floatval($item->prediction);
+    
+                $error = abs($actVal - $predVal);
+                $percentage = $predVal == 0 ? 0 : round(($error / $predVal) * 100, 0);
                 if ($percentage >= 100) {
-                    $percentage = rand(80, 95);
+                    $percentage = rand(80, 95); // ini opsional, bisa dihapus jika ingin nilai asli
                 }
-
+    
                 $errors[] = [
                     'date' => $item->date,
-                    'actual' => $actual->total,
-                    'prediction' => $item->prediction,
-                    'error' => $error,
+                    'actual' => $actVal,
+                    'prediction' => $predVal,
+                    'error' => round($error, 2),
                     'percentage' => $percentage
                 ];
+    
+                $actuals[] = $actVal;
+                $predicted[] = $predVal;
             }
         }
-        /* Calculte MAPE for daily predict*/
-        $n = count($errors);
-        $sum = 0;
-        for ($i = 0; $i < $n; $i++) {
-            $sum += $errors[$i]['percentage'];
-        }
-        if ($n == 0) {
-            $mape = 0;
-        } else {
-            $mape = round($sum / $n, 2);
-        }
-
+    
+        // Hitung statistik error
+        $mae = $this->calculateMAE($actuals, $predicted);
+        $rmse = $this->calculateRMSE($actuals, $predicted);
+        $mape = $this->calculateMAPE($actuals, $predicted);
+    
         /* Monthly Predict per Year */
         $repcon = new EnmsReportController();
         $monthlyActuals = $repcon->getMonthlyKwhReport($thisYear);
         $monthlyPredicts = $epcon->getMonthlyPredictionsByYear($thisYear);
         $monthlyErrors = [];
+    
         foreach ($monthlyPredicts as $item) {
-            // calculate difference between actual and prediction and store it in $errors
             $actual = $monthlyActuals->where('bulan', $item->bulan)->first();
             if ($actual) {
-                $error = abs($actual->kwh_1 - $item->prediction);
-                $percentage = round(($error / $item->prediction) * 100, 0);
+                $actVal = floatval($actual->kwh_1);
+                $predVal = floatval($item->prediction);
+    
+                $error = abs($actVal - $predVal);
+                $percentage = $predVal == 0 ? 0 : round(($error / $predVal) * 100, 0);
                 if ($percentage >= 100) {
                     $percentage = rand(80, 95);
                 }
-
+    
                 $monthlyErrors[] = [
                     'bulan' => $item->bulan,
-                    'actual' => $actual->kwh_1,
-                    'prediction' => $item->prediction,
-                    'error' => $error,
+                    'actual' => $actVal,
+                    'prediction' => $predVal,
+                    'error' => round($error, 2),
                     'percentage' => $percentage
                 ];
             }
         }
-
+    
         /* Electricity Usage Summary */
         $mdpEn = $this->getEnergyUsageMonitorById(1);
-        $keysEn = ['todayKwh', 'thisMonthKwh', 'thisMonthCost', 'lastMonthKwh', 'lastMonthCost'];
-        $collection2 = ["Today", "This Month", "This Month Cost", "Last Month", "Last Month Cost"];
-        $units2 = ['kWh', 'kWh', 'IDR', 'kWh', 'IDR'];
+        $keysEn = ['todayKwh', 'thisMonthKwh', 'thisMonthCost', 'lastMonthKwh', 'lastMonthCost', 'todayCost'];
+        $collection2 = ["Today", "This Month", "This Month Cost", "Last Month", "Last Month Cost", "Today Cost"];
+        $units2 = ['kWh', 'kWh', 'IDR', 'kWh', 'IDR', 'IDR'];
         $decSep = Subdata::latest()->pluck('decimal_sep')->first();
         $thSep = Subdata::latest()->pluck('thousand_sep')->first();
-
-
-        // Selisih antara energi hari ini dengen kebiasaan di hari yang sama sebelumnya
-        // $dailyEnergy = $this->getDailyEnergy();
-        $todayKwh = $daily[count($daily) - 1]->total;
+    
+        $todayKwh = $daily->last()->total ?? 0;
         $todayWeekday = Carbon::today()->dayOfWeek;
         $todayName = Carbon::today()->format('l');
-
-        $previousEnergies = collect($daily)->filter(function ($energy) use ($todayWeekday) {
-            $energyWeekday = Carbon::parse($energy->date)->dayOfWeek;
-            return $energyWeekday === $todayWeekday && $energy->date < Carbon::today()->format('Y-m-d');
+        $price = Subdata::latest()->pluck('hargaKwh')->first();
+        $todayCost = $todayKwh * $price;
+    
+        $previousEnergies = $daily->filter(function ($energy) use ($todayWeekday) {
+            return Carbon::parse($energy->date)->dayOfWeek === $todayWeekday && $energy->date < Carbon::today()->format('Y-m-d');
         });
-
-        // Calculate the average energy consumption on same day in previous week
-        $averageEnergy = $previousEnergies->avg('total') ?? $todayKwh; // jika tidak ada data sebelumnya, maka gunakan data hari ini
-        $comparison = ($todayKwh - $averageEnergy) * 100 / $averageEnergy ?? 0;
-
+    
+        $averageEnergy = $previousEnergies->avg('total') ?? $todayKwh;
+        $comparison = ($averageEnergy == 0) ? 0 : (($todayKwh - $averageEnergy) * 100 / $averageEnergy);
+    
         $energyDiff = number_format($comparison, 2);
         $energyDiffStatus = ($todayKwh > $averageEnergy) ? 'naik' : 'turun';
-
-        // Biaya listrik tiap bulan
+    
         $monthlyKwh = $this->getMonthlyEnergy();
-
         $subCon = new SubdataController();
-
+    
         $n = count($monthlyKwh);
         if ($n > 1) {
             for ($i = 0; $i < $n - 1; $i++) {
-                $monthlyKwh[$i]->diffStatus = ($monthlyKwh[$i]->total > $monthlyKwh[$i + 1]->total) ? 'naik' : 'turun';
-                $monthlyKwh[$i]->diff = $subCon->formatNumber(abs(($monthlyKwh[$i]->total - $monthlyKwh[$i + 1]->total) / $monthlyKwh[$i + 1]->total) * 100, 2);
+                $currentTotal = $monthlyKwh[$i]->total;
+                $nextTotal = $monthlyKwh[$i + 1]->total;
+
+                $monthlyKwh[$i]->diffStatus = ($currentTotal > $nextTotal) ? 'naik' : 'turun';
+
+                if ($nextTotal == 0) {
+                    // Hindari division by zero
+                    $monthlyKwh[$i]->diff = 0;
+                } else {
+                    $monthlyKwh[$i]->diff = $subCon->formatNumber(
+                        abs(($currentTotal - $nextTotal) / $nextTotal) * 100, 2
+                    );
+                }
             }
         }
         $monthlyKwh[$n - 1]->diffStatus = 'turun';
         $monthlyKwh[$n - 1]->diff = 0;
-
-        // Paginate the result manually
-        $perPage = 6; // 6 items per page
+    
+        // Pagination
+        $perPage = 6;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $currentPageItems = array_slice($monthlyKwh->toArray(), ($currentPage - 1) * $perPage, $perPage);
-
-        // Convert array to collection for paginator
         $dataCollection = new Collection($currentPageItems);
         $request = new Request();
-
-        // Create paginator instance
         $paginatedData = new LengthAwarePaginator(
-            $currentPageItems, // Paginated items for the current page
-            count($monthlyKwh), // Total count of items
-            $perPage, // Items per page
-            $currentPage, // Current page number
+            $currentPageItems,
+            count($monthlyKwh),
+            $perPage,
+            $currentPage,
             [
-                'path' => route('energy-stats'), // Get the current URL
-                'query' => $request->query(), // Maintain the existing query string
+                'path' => route('energy-stats'),
+                'query' => $request->query(),
+            ]
+        );
+    
+        $lastUpdateTime = MdpKwh::latest('updated_at')->pluck('updated_at')->first();
+        $lastUpdateTime = $lastUpdateTime
+            ? Carbon::parse($lastUpdateTime)->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm')
+            : Carbon::now('Asia/Jakarta')->format('l, d F Y H:i');
+
+        # ------------------------------------------------------------------------------------------------
+        // Ambil harga kWh terbaru
+        $price = Subdata::latest()->pluck('hargaKwh')->first();
+
+        // Hitung biaya listrik harian (bill) dan format tanggal untuk daily
+        foreach ($daily as $item) {
+            $item->bill = number_format($item->total * $price, 0, ',', '.');
+            $item->date_formatted = Carbon::parse($item->date)->format('d M Y');
+        }
+
+        // Ambil bulan yang dipilih dari request
+        $selectedMonth = request()->get('month', Carbon::now()->format('m')); // default: bulan ini
+        $selectedYear = Carbon::now()->format('Y');
+
+        // Filter harian berdasarkan bulan dan tahun
+        $dailyFilteredAll = $daily->filter(function ($item) use ($selectedMonth, $selectedYear) {
+            return Carbon::parse($item->date)->format('m') == $selectedMonth &&
+                Carbon::parse($item->date)->format('Y') == $selectedYear;
+        })->sortByDesc('date')->values();
+
+        // Buat pagination untuk data harian
+        $perPageDaily = 6;
+        $currentPageDaily = LengthAwarePaginator::resolveCurrentPage('page_daily');
+        $currentPageItemsDaily = $dailyFilteredAll->slice(($currentPageDaily - 1) * $perPageDaily, $perPageDaily)->values();
+        $paginatedDaily = new LengthAwarePaginator(
+            $currentPageItemsDaily,
+            $dailyFilteredAll->count(),
+            $perPageDaily,
+            $currentPageDaily,
+            [
+                'path' => route('energy-stats'),
+                'pageName' => 'page_daily',
+                'query' => request()->query(),
             ]
         );
 
-        return view("pages.energy.stats", compact('title', 'energyDiff', 'energyDiffStatus', 'todayName', 'predicts', 'daily', 'monthlyKwh', 'paginatedData', 'mape', 'errors', 'monthlyActuals', 'monthlyPredicts', 'monthlyErrors', 'mdpEn', 'keysEn', 'collection2', 'units2', 'decSep', 'thSep'));
+        // Bulan untuk dropdown
+        $monthOptions = collect(range(1, 12))->map(function ($m) {
+            return [
+                'value' => str_pad($m, 2, '0', STR_PAD_LEFT),
+                'label' => Carbon::create()->month($m)->translatedFormat('F'),
+            ];
+        });
+        # ------------------------------------------------------------------------------------------------
+    
+        return view("pages.energy.stats", compact(
+            'title', 'energyDiff', 'energyDiffStatus', 'todayName', 'predicts',
+            'daily', 'monthlyKwh', 'paginatedData', 'errors', 'monthlyActuals',
+            'monthlyPredicts', 'monthlyErrors', 'mape', 'mae', 'rmse',
+            'mdpEn', 'keysEn', 'collection2', 'units2', 'decSep', 'thSep',
+            'todayCost', 'lastUpdateTime', 'daily', 'paginatedDaily', 'selectedMonth', 'monthOptions'
+        ));
     }
+
 
     public function standarIke()
     {
@@ -284,6 +391,22 @@ class EnergyController extends Controller
         return Excel::download($export, 'Monthly_Electricity_Bill.xlsx');
     }
 
+    public function exportDailyKwh(Request $request)
+    {
+        $month = $request->get('month', now()->format('Y-m'));
+        $monthOptions = $this->getLimitedMonthlyEnergy(30); // contoh fungsi bulan terbatas
+
+        $price = Subdata::latest()->pluck('hargaKwh')->first(); // ambil harga kWh terbaru
+
+        $data = $this->getDailyEnergy($month); // data harian
+
+        // Hitung biaya untuk tiap hari
+        foreach ($data as &$item) {
+            $item->bill = number_format($item->total * $price, 0, ',', '.');
+        }
+
+        return Excel::download(new DailyEnergyExport($data, $month, $monthOptions), 'Daily_Energy_' . $month . '.xlsx');
+    }
 
     /* 
         for APIs
@@ -722,6 +845,10 @@ class EnergyController extends Controller
             $yesterdayData = $daily[1];
         }
         $todayKwh = $latestData->{"kwh_$id_kwh"}  - $yesterdayData->{"kwh_$id_kwh"};
+        
+        // Ambil tarif per kWh dari Subdata
+        $price = Subdata::latest()->pluck('hargaKwh')->first();
+        $todayCost = $todayKwh * $price;
 
         $lastTwoMonthsData = $this->getLastTwoMonthsEnergyById($id_kwh);
         $thisMonthKwh = $lastTwoMonthsData[0]->{"kwh_$id_kwh"};
@@ -734,7 +861,8 @@ class EnergyController extends Controller
             'lastMonthKwh' => $lastMonthKwh,
             'thisMonthKwh' => $thisMonthKwh,
             'lastMonthCost' => $lastMonthCost,
-            'thisMonthCost' => $thisMonthCost
+            'thisMonthCost' => $thisMonthCost,
+            'todayCost' => $todayCost,
         ];
     }
 }

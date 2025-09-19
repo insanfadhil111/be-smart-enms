@@ -63,13 +63,11 @@
                     <div
                         class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
                         <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
-                            style="background-image: url({{ asset('img/bg-login.webp') }});
-              background-size: cover;">
+                            style="background-image: url({{ asset('img/bg-login.webp') }}); background-size: cover;">
                             <span class="mask bg-gradient-success opacity-8"></span>
-                            <h4 class="mt-5 font-weight-bolder position-relative">"Smart Energy for <br> a Sustainable
-                                Future"</h4>
-                            <p class="text-dark position-relative">Optimizing your energy use for a better environment
-                                and business growth</p>
+                            <h1 class="text-black text-center font-weight-bolder display-2 position-relative">Gedung 3 FT UNS</h1>
+                            <h4 class="mt-2 font-weight-bolder position-relative">"Smart Energy for <br> a Sustainable Future"</h4>
+                            <p class="text-dark position-relative">Optimizing your energy use for a better environment and business growth</p>
                         </div>
                     </div>
                 </div>

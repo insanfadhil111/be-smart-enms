@@ -36,8 +36,8 @@
                                 <li><a class="dropdown-item" href="#" data-value="mdp">MDP (Total)</a></li>
                                 <li><a class="dropdown-item" href="#" data-value="ac1">SDP AC 1</a></li>
                                 <li><a class="dropdown-item" href="#" data-value="ac2">SDP AC 2</a></li>
-                                <li><a class="dropdown-item" href="#" data-value="util1">Utilitas Lt.1</a></li>
-                                <li><a class="dropdown-item" href="#" data-value="util2">Utilitas Lt.2</a></li>
+                                <!--<li><a class="dropdown-item" href="#" data-value="util1">Utilitas Lt.1</a></li>-->
+                                <!--<li><a class="dropdown-item" href="#" data-value="util2">Utilitas Lt.2</a></li>-->
                             </ul>
                         </div>
                     </div>
@@ -50,24 +50,24 @@
                         id="dataDisplay">
                         @foreach ($keys as $i => $key)
                         <div class="col py-2 px-0 border border-shadow h-100"
-                            style="border-radius: 1rem; background-color:white">
+                            style="border-radius: 1rem;">
                             <div class="numbers px-1 text-center">
                                 <p class="text-sm mb-2 text-uppercase">
                                     {{ $collection[$i] }}
                                 </p>
-                                <p class="text-lg font-weight-bolder text-dark m-0 p-0">
-                                    <span class="mdp-value">{{ number_format($mdp->$key, 1, $decSep, $thSep)
+                                <h6 class="text-lg font-weight-bolder text-dark m-0 p-0">
+                                    <span class="mdp-value">{{ number_format($mdp->$key, 2, $decSep, $thSep)
                                         }}</span>
-                                    <span class="ac1-value" style="display: none;">{{ number_format($ac1->$key, 1,
+                                    <span class="ac1-value" style="display: none;">{{ number_format($ac1->$key, 2,
                                         $decSep, $thSep) }}</span>
-                                    <span class="ac2-value" style="display: none;">{{ number_format($ac2->$key, 1,
+                                    <span class="ac2-value" style="display: none;">{{ number_format($ac2->$key, 2,
                                         $decSep, $thSep) }}</span>
-                                    <span class="util1-value" style="display: none;">{{ number_format($util1->$key, 1,
+                                    <span class="util1-value" style="display: none;">{{ number_format($util1->$key, 2,
                                         $decSep, $thSep) }}</span>
-                                    <span class="util2-value" style="display: none;">{{ number_format($util2->$key, 1,
+                                    <span class="util2-value" style="display: none;">{{ number_format($util2->$key, 2,
                                         $decSep, $thSep) }}</span>
                                     <span><small class="text-warning">{{ $units[$i] }}</small></span>
-                                </p>
+                                </h6>
                             </div>
                         </div>
                         @endforeach
@@ -76,14 +76,19 @@
             </div>
 
             <div class="row-12">
-                <div class="card-header my-0 py-0">
-                    <h6>Energy Usage</h6>
+                <div class="card-header my-0 py-0 mb-2 d-flex justify-content-between align-items-center">
+                    <div class="col-auto">
+                        <h6>Energy Usage</h6>
+                        <p class="mb-0">
+                            <small>Last Updated : {{ $lastUpdateTime }} WIB</small>
+                        </p>
+                    </div>
                 </div>
                 <div class="card-body pt-0">
                     <div class="d-flex justify-content-center">
                         @foreach ($keysEn as $i => $keyEn)
                         <div class="col mx-2 p-2 border border-shadow"
-                            style="border-radius: 1rem; background-color:white">
+                            style="border-radius: 1rem;">
                             <div class="numbers text-center">
                                 <p class="text-sm mb-2 text-uppercase font-weight-bold">
                                     {{ $collection2[$i] }}
@@ -165,6 +170,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
 <script type="text/javascript" src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/theme/dark.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -200,15 +206,28 @@
         const endDateInput = document.getElementById('endDate');
         const filterButton = document.getElementById('filterButton');
         const exportButton = document.getElementById('exportButton');
+        const darkToggle = document.getElementById('dark-version');
+        if (darkToggle) {
+            darkToggle.addEventListener('change', () => {
+                const newTheme = darkToggle.checked ? 'dark' : null;
+                chart.dispose(); // destroy current chart
+                chart = echarts.init(chartContainer, newTheme); // re-init with new theme
+                updateChart(magnitudeSelect.value); // re-render
+                
+            });
+        }
 
         let chart;
         let filteredData = { ...chartData };
 
         if (chartContainer) {
-            chart = echarts.init(chartContainer);
+            const isDark = document.body.classList.contains('dark-version');
+            const chartTheme = isDark ? 'dark' : null;
+            chart = echarts.init(chartContainer, chartTheme);
 
             function updateChart(magnitude) {
                 const option = {
+                    backgroundColor: 'transparent',
                     title: {
                         text: `${magnitude} vs Time for 5 Devices`,
                         left: 'center',

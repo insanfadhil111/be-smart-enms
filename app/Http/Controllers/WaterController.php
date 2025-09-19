@@ -126,7 +126,7 @@ class WaterController extends Controller
         }
 
         if ($todayData && $yesterdayData) {
-            $todayData->todayVol = $todayData->volume - $yesterdayData->volume;
+            $todayData->todayVol = abs($todayData->volume - $yesterdayData->volume);
 
             return (object)[
                 'volume' => $todayData->volume,
@@ -235,7 +235,7 @@ class WaterController extends Controller
         }
 
         for ($i = 0; $i < $length - 1; $i++) {
-            $data[$i]->monthlyVol = $data[$i]->volume - $data[$i + 1]->volume;
+            $data[$i]->monthlyVol = abs($data[$i]->volume - $data[$i + 1]->volume);
             $data[$i]->monthlyCost = $data[$i]->monthlyVol * $hargaPdam; // Biaya PDAM
         }
         $data[$length - 1]->monthlyVol = $data[$length - 1]->volume;
@@ -281,7 +281,7 @@ class WaterController extends Controller
 
         if ($length > 0) {
             for ($i = 1; $i < $length; $i++) {
-                $data[$i]->nowVol = $data[$i]->volume - $data[$i - 1]->volume;
+                $data[$i]->nowVol = abs($data[$i]->volume - $data[$i - 1]->volume);
             }
 
             $latestDataBeforeLastweek = Water::select('volume')
@@ -289,14 +289,13 @@ class WaterController extends Controller
                 ->whereDate('created_at', '<', Carbon::today()->subDays(6))
                 ->latest()->first();
             if ($latestDataBeforeLastweek === null) {
-                // $latestDataBeforeLastweek = (object)['volume' => 0];
                 $latestDataBeforeLastweek =  Water::select('volume')
                     ->where('id_dev', $id_dev)
                     ->where('created_at', '<', $data[0]->timestamp)
                     ->latest()->first();
             }
 
-            $data[0]->nowVol = $data[0]->volume - $latestDataBeforeLastweek->volume;
+            $data[0]->nowVol = abs($data[0]->volume - $latestDataBeforeLastweek->volume);
             // If Anomali (karena data di DB loncat karen logger mati selama lebih dari seminggu)
             if ($data[0]->nowVol > 10) {
                 $data[0]->nowVol = $data[1]->nowVol;
@@ -380,7 +379,7 @@ class WaterController extends Controller
         $hargaPdam = Subdata::latest()->pluck('hargaPdam')->first();
 
         for ($i = 1; $i < $length; $i++) {
-            $data1[$i]->thisVol = $data1[$i]->totalVol - $data1[$i - 1]->totalVol;
+            $data1[$i]->thisVol = abs($data1[$i]->totalVol - $data1[$i - 1]->totalVol);
             $data1[$i]->cost = $data1[$i]->thisVol * $hargaPdam;
             $data1[$i]->time = Carbon::parse($data1[$i]->day)->format('d M');
         }
@@ -485,7 +484,7 @@ class WaterController extends Controller
                                 // Update thisVol and cost based on new totals
                                 if ($lastResult) {
                                     $entry['thisVol'] = max(0, $entry['totalVol'] - $lastResult['totalVol']);
-                                    $entry['cost'] = $entry['thisVol'] * 1575;
+                                    $entry['cost'] = $entry['thisVol'] * $hargaPdam;
                                 }
                                 $lastResult = $entry;
                             }
@@ -514,15 +513,15 @@ class WaterController extends Controller
             // Calculate thisVol
             if (!$lastResult) {
                 // For the first entry of the month, subtract previous month's total
-                $thisVol = max(0, $totalVol - $prevTotalVol);
+                $thisVol = abs($totalVol - $prevTotalVol);
             } else {
                 // For subsequent entries
-                $thisVol = max(0, $totalVol - $lastResult['totalVol']);
+                $thisVol = abs($totalVol - $lastResult['totalVol']);
             }
 
             // If this is a transition from estimated to actual data, adjust thisVol
             if ($lastResult && $lastResult['is_estimated'] && !(!$record1 || !$record2)) {
-                $thisVol = max(0, $totalVol - $lastResult['totalVol']);
+                $thisVol = abs($totalVol - $lastResult['totalVol']);
             }
 
             // Create result entry
@@ -532,7 +531,7 @@ class WaterController extends Controller
                 'vol_2' => round($vol2, 2),
                 'totalVol' => round($totalVol, 2),
                 'thisVol' => round($thisVol, 2),
-                'cost' => round($thisVol * 1575, 2),
+                'cost' => round($thisVol * $hargaPdam, 2),
                 'time' => date('d M', strtotime($date)),
                 'is_estimated' => !$record1 || !$record2
             ];
@@ -586,45 +585,55 @@ class WaterController extends Controller
         $length2 = count($data2);
         /* Compare the length of those two data, then use the longer one. sum the value when the day is same and make it 0 to the one which doent have data for that day */
         $length = max($length1, $length2);
+        // Convert collections to arrays and ensure they're properly initialized
+        $result = collect();
+
         for ($i = 0; $i < $length; $i++) {
-            $day1 = isset($data1[$i]) ? $data1[$i]->day : null;
-            $day2 = isset($data2[$i]) ? $data2[$i]->day : null;
-            if ($day1 === $day2) {
-                $data1[$i]->vol_1 = $data1[$i]->volume;
-                $data1[$i]->vol_2 = $data2[$i]->volume;
-                $data1[$i]->totalVol = $data1[$i]->volume + $data2[$i]->volume;
-            } else if ($day1 === null) {
-                $data1[$i] = (object) [
-                    'day' => $day2,
-                    'volume' => 0,
-                    'vol_1' => 0,
-                    'timestamp' => null
-                ];
-                $data1[$i]->vol_1 = 0;
-                $data1[$i]->vol_2 = $data2[$i]->volume;
-                $data1[$i]->totalVol = $data1[$i]->volume + $data2[$i]->volume;
-            } else if ($day2 === null) {
-                $data2[$i] = (object) [
-                    'day' => $day1,
-                    'volume' => 0,
-                    'vol_2' => 0,
-                    'timestamp' => null
-                ];
-                $data1[$i]->vol_1 = $data1[$i]->volume;
-                $data1[$i]->vol_2 = 0;
-                $data1[$i]->totalVol = $data1[$i]->volume + $data2[$i]->volume;
+            $item1 = $data1[$i] ?? null;
+            $item2 = $data2[$i] ?? null;
+
+            $newItem = new \stdClass();
+
+            if ($item1 && $item2) {
+                // Both items exist
+                $newItem->month = $item1->month;
+                $newItem->volume = $item1->volume;
+                $newItem->timestamp = $item1->timestamp;
+                $newItem->vol_1 = $item1->volume;
+                $newItem->vol_2 = $item2->volume;
+                $newItem->totalVol = $item1->volume + $item2->volume;
+            } elseif ($item1) {
+                // Only item1 exists
+                $newItem->month = $item1->month;
+                $newItem->volume = $item1->volume;
+                $newItem->timestamp = $item1->timestamp;
+                $newItem->vol_1 = $item1->volume;
+                $newItem->vol_2 = 0;
+                $newItem->totalVol = $item1->volume;
+            } elseif ($item2) {
+                // Only item2 exists
+                $newItem->month = $item2->month;
+                $newItem->volume = 0;
+                $newItem->timestamp = $item2->timestamp;
+                $newItem->vol_1 = 0;
+                $newItem->vol_2 = $item2->volume;
+                $newItem->totalVol = $item2->volume;
             }
+
+            $result->push($newItem);
         }
 
         $hargaPdam = Subdata::latest()->pluck('hargaPdam')->first();
 
-        for ($i = 1; $i < $length; $i++) {
-            $data1[$i]->thisVol = $data1[$i]->totalVol - $data1[$i - 1]->totalVol;
-            $data1[$i]->cost = $data1[$i]->thisVol * $hargaPdam;
-            $data1[$i]->time = Carbon::parse($data1[$i]->month)->format('M Y');
+        // Calculate this vol and cost for all items except the first one
+        for ($i = 1; $i < $result->count(); $i++) {
+            $result[$i]->thisVol = $result[$i]->totalVol - $result[$i - 1]->totalVol;
+            $result[$i]->cost = $result[$i]->thisVol * $hargaPdam;
+            $result[$i]->time = Carbon::parse($result[$i]->month)->format('M Y');
         }
-        $data1->shift(); // Menghapus volume desember tahun lalu
-        return $data1;
+
+        // Remove the first item (December of last year)
+        return $result->slice(1);
     }
 
     public function addWaterData(Request $request)
@@ -632,8 +641,8 @@ class WaterController extends Controller
         try {
             $data = new Water();
             $data->id_dev = $request->id_dev;
-            $data->debit = $request->debit;
-            $data->volume = $request->volume;
+            $data->debit = abs($request->debit);
+            $data->volume = abs($request->volume);
 
             $data->save();
             return response()->json([
